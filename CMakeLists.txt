@@ -1,3 +1,5 @@
+add_compile_options(-O3)
+
 cmake_minimum_required(VERSION 3.26)
 project(object_detection_cpp)
 
@@ -7,6 +9,8 @@ add_executable(object_detection_cpp main.cpp
         feature.cpp
         feature.h
         constants.h
+        image.cpp
+        image.h
         utils.cpp
         utils.h)
 
