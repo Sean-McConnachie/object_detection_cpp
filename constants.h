@@ -5,10 +5,6 @@
 #define IM_HEIGHT 288
 #define FP_FACES_DIR "../dataset/faces/"
 #define FP_BGS_DIR "../dataset/backgrounds/"
+#define FACES_CROP_TOP 50
 
 typedef unsigned char uchar;
-
-enum Result {
-    SUCCESS,
-    FAILURE
-};

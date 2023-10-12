@@ -83,14 +83,8 @@ Img<T> Img<T>::toIntegral() {
 }
 
 template<typename T>
-Result
-Img<T>::loadGrayScale(const std::string &path) {
-    cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
-    if (image.empty()) {
-        std::cout << "Could not read the image: " << path << std::endl;
-        return FAILURE;
-    }
-
+void
+Img<T>::loadGrayScale(cv::Mat image) {
     cv::Mat gleamed = gleam(image);
 
     cv::Mat resized;
@@ -101,7 +95,6 @@ Img<T>::loadGrayScale(const std::string &path) {
             this->arr[y][x] = static_cast<T>(resized.at<uchar>((int) y, (int) x));
         }
     }
-    return SUCCESS;
 }
 
 template<typename T>

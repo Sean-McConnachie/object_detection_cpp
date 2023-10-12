@@ -26,10 +26,10 @@ public:
 
     /**
      * @brief Apply gamma and gleam.
-     * @param path
+     * @param image
      * @return
      */
-    Result loadGrayScale(const std::string &path);
+    void loadGrayScale(cv::Mat image);
 
     Img<T> toIntegral();
 

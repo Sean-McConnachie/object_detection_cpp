@@ -9,6 +9,15 @@ int main() {
     auto bgs = list_dir(FP_BGS_DIR);
     printf("Loaded: %zu faces, %zu backgrounds\n", faces.size(), bgs.size());
 
+//    auto f = open_face(faces[123]);
+//    auto f1 = open_face(faces[124]);
+    auto ims = sample_ims(faces, 50);
+
+    auto merged = merge_images(ims);
+
+    cv::imshow("test", merged.toMat());
+    cv::waitKey(0);
+
 
     /*
     Img<size_t> stan(5, 5);
@@ -26,12 +35,14 @@ int main() {
     cv::waitKey(0);
      */
 
-    /**/
+    /*
 //    auto fp = "../dataset/faces/1905_Ohio_Cleveland_Central_0-1.png";
     auto fp = "../dataset/solvay-conference.jpg";
 
-    Img<uchar> im(IM_HEIGHT, IM_WIDTH);
-    im.loadGrayScale(fp);
+//    Img<uchar> im(IM_HEIGHT, IM_WIDTH);
+    cv::Mat image = cv::imread(fp, cv::IMREAD_COLOR);
+    Img<uchar> im(806, 1600);
+    im.loadGrayScale(image);
 
     Img<float> im1 = im.cast<float>();
 
@@ -45,5 +56,5 @@ int main() {
 
     cv::imshow("test", img);
     cv::waitKey(0);
-    /**/
+    */
 }
