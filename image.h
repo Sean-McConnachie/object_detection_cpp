@@ -10,11 +10,11 @@ template<typename T>
 class Img {
 private:
 public:
-    size_t height{};
-    size_t width{};
+    int height{};
+    int width{};
     T **arr;
 
-    Img(size_t height, size_t width);
+    Img(int height, int width);
 
     /**
      * @brief Copy constructor
@@ -31,7 +31,7 @@ public:
      */
     void loadGrayScale(cv::Mat image);
 
-    Img<T> toIntegral();
+    Img<T> toIntegral() const;
 
     template<typename U>
     Img<U> cast();
@@ -42,7 +42,9 @@ public:
      */
     cv::Mat toMat();
 
-    void normalizeTo(T max);
+    void normalize(T max);
+
+    void normalize(T mean, T std);
 
     [[maybe_unused]] Img<uchar> revertIntegral();
 
@@ -50,6 +52,8 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Img<U> &img);
 
     void print() { std::cout << *this << std::endl; }
+
+    Img<T> resize(int h, int w);
 };
 
 template<typename U>

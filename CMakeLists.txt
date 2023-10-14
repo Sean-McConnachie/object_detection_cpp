@@ -1,4 +1,4 @@
-add_compile_options(-O3)
+#add_compile_options(-O3)
 
 cmake_minimum_required(VERSION 3.26)
 project(object_detection_cpp)

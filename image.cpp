@@ -31,7 +31,7 @@ gleam(cv::Mat &img) {
 }
 
 template<typename T>
-Img<T>::Img(size_t height, size_t width) {
+Img<T>::Img(int height, int width) {
     this->height = height;
     this->width = width;
     this->arr = new T *[height];
@@ -62,7 +62,7 @@ Img<T>::~Img() {
 }
 
 template<typename T>
-Img<T> Img<T>::toIntegral() {
+Img<T> Img<T>::toIntegral() const {
     Img<T> integral(this->height + 1, this->width + 1);
     for (size_t x = 0; x < integral.height; ++x) {
         integral.arr[0][x] = 0;
@@ -111,7 +111,7 @@ Img<T>::toMat() {
 
 template<typename T>
 void
-Img<T>::normalizeTo(T max) {
+Img<T>::normalize(T max) {
     T max_val = 0;
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
@@ -129,6 +129,16 @@ Img<T>::normalizeTo(T max) {
 }
 
 template<typename T>
+void
+Img<T>::normalize(T mean, T std) {
+    for (size_t y = 0; y < this->height; y++) {
+        for (size_t x = 0; x < this->width; x++) {
+            this->arr[y][x] = (this->arr[y][x] - mean) / std;
+        }
+    }
+}
+
+template<typename T>
 [[maybe_unused]] Img<uchar> Img<T>::revertIntegral() {
     Img<uchar> integral(this->height - 1, this->width - 1);
     for (size_t y = 0; y < this->height - 1; ++y) {
@@ -139,4 +149,15 @@ template<typename T>
     return integral;
 }
 
-
+template<typename T>
+Img<T> Img<T>::resize(int h, int w) {
+    Img<T> resized(h, w);
+    cv::Mat mat = this->toMat();
+    cv::resize(mat, mat, cv::Size(w, h));
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            resized.arr[y][x] = mat.at<uchar>(y, x);
+        }
+    }
+    return resized;
+}
