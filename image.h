@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 void gamma(cv::Mat &img, double gamma);
+
 cv::Mat gleam(cv::Mat &img);
 
 template<typename T>
@@ -24,6 +25,8 @@ public:
 
     ~Img();
 
+    void swap(Img<T> &other);
+
     /**
      * @brief Apply gamma and gleam.
      * @param image
@@ -31,7 +34,7 @@ public:
      */
     void loadGrayScale(cv::Mat image);
 
-    Img<T> toIntegral() const;
+    [[nodiscard]]Img<T> toIntegral() const;
 
     template<typename U>
     Img<U> cast();
@@ -46,7 +49,7 @@ public:
 
     void normalize(T mean, T std);
 
-    [[maybe_unused]] Img<uchar> revertIntegral();
+    [[maybe_unused]] Img<T> revertIntegral();
 
     template<typename U>
     friend std::ostream &operator<<(std::ostream &os, const Img<U> &img);
@@ -60,7 +63,7 @@ template<typename U>
 std::ostream &operator<<(std::ostream &os, const Img<U> &img) {
     for (size_t y = 0; y < img.height; y++) {
         for (size_t x = 0; x < img.width; x++) {
-            os << img.arr[y][x] << '\t';
+            os << (float) img.arr[y][x] << '\t';
         }
         os << std::endl;
     }
@@ -92,3 +95,6 @@ class Img<float>;
 
 template
 class Img<double>;
+
+typedef float ImgFlt;
+typedef Img<ImgFlt> ImgType;

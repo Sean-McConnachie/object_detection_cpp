@@ -1,6 +1,8 @@
 /cmake-build-debug/
 /dataset/
 /.idea
+/venv
+/pywork
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles

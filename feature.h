@@ -35,69 +35,85 @@ public:
 
     void print() const;
 
+    [[nodiscard]] std::string str() const;
+
+
     virtual std::tuple<int, const FeatPt *> points() const = 0;
 
-    [[nodiscard]] int diff(const Img<float> &img) const;
+    [[nodiscard]] virtual const char * name() const = 0;
+
+    [[nodiscard]] ImgFlt diff(const ImgType &img) const;
 };
 
 class Feature2h : public Feature {
 private:
 public:
-    FeatPt pts[8];
+    FeatPt pts[8]{};
 
     Feature2h(size_t x, size_t y, size_t width, size_t height);
 
     [[nodiscard]] std::tuple<int, const FeatPt *> points() const override;
 
     [[nodiscard]] static XY baseSize();
+
+    [[nodiscard]] const char * name() const override;
 };
 
 class Feature2v : public Feature {
 private:
 public:
-    FeatPt pts[8];
+    FeatPt pts[8]{};
 
     Feature2v(size_t x, size_t y, size_t width, size_t height);
 
     [[nodiscard]] std::tuple<int, const FeatPt *> points() const override;
 
     [[nodiscard]] static XY baseSize();
+
+    [[nodiscard]] const char * name() const override;
 };
 
 class Feature3h : public Feature {
 private:
 public:
-    FeatPt pts[12];
+    FeatPt pts[12]{};
 
     Feature3h(size_t x, size_t y, size_t width, size_t height);
 
     [[nodiscard]] std::tuple<int, const FeatPt *> points() const override;
 
     [[nodiscard]] static XY baseSize();
+
+    [[nodiscard]] const char * name() const override;
+
 };
 
 class Feature3v : public Feature {
 private:
 public:
-    FeatPt pts[12];
+    FeatPt pts[12]{};
 
     Feature3v(size_t x, size_t y, size_t width, size_t height);
 
     [[nodiscard]] std::tuple<int, const FeatPt *> points() const override;
 
     [[nodiscard]] static XY baseSize();
+
+    [[nodiscard]] const char * name() const override;
 };
 
 class Feature4 : public Feature {
 private:
 public:
-    FeatPt pts[16];
+    FeatPt pts[16]{};
 
     Feature4(size_t x, size_t y, size_t width, size_t height);
 
     [[nodiscard]] std::tuple<int, const FeatPt *> points() const override;
 
     [[nodiscard]] static XY baseSize();
+
+    [[nodiscard]] const char * name() const override;
 };
 
 typedef struct {
@@ -111,3 +127,5 @@ typedef struct {
 Features generate_features();
 
 void print_features(const Features &features);
+
+std::vector<const Feature *> feature_vec(const Features &features);

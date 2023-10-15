@@ -9,9 +9,9 @@ list_dir(const std::string &path) {
     return paths;
 }
 
-Img<float>
+ImgType
 open_face(const std::string &path) {
-    Img<float> im(FEATURE_SIZE, FEATURE_SIZE);
+    ImgType im(FEATURE_SIZE, FEATURE_SIZE);
 
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
     cv::Rect roi(0, FACES_CROP_TOP, image.cols, image.rows - FACES_CROP_TOP);
@@ -25,8 +25,8 @@ open_face(const std::string &path) {
     return im;
 }
 
-Img<float>
-merge_images(const std::vector<Img<float>> &images) {
+ImgType
+merge_images(const std::vector<ImgType> &images) {
     int max_height = 0;
     int total_width = 0;
     for (const auto &image: images) {
@@ -34,7 +34,7 @@ merge_images(const std::vector<Img<float>> &images) {
         total_width += (int) image.width;
     }
 
-    Img<float> merged(max_height, total_width);
+    ImgType merged(max_height, total_width);
 
     // set all pixels to 0
     for (int y = 0; y < max_height; ++y) {
@@ -59,8 +59,8 @@ merge_images(const std::vector<Img<float>> &images) {
 std::vector<std::string *>
 sample_paths(const paths &ims, size_t n) {
     std::vector<std::string *> result;
-    std::random_device rd;
-    std::mt19937 gen(rd());
+//    std::random_device rd;
+    std::mt19937 gen(SEED);
     std::uniform_int_distribution<> distrib(0, (int) ims.size() - 1);
 
     for (size_t i = 0; i < n; ++i) {
@@ -74,7 +74,7 @@ sample_paths(const paths &ims, size_t n) {
 images
 sample_faces(const paths &ims, size_t n) {
     std::vector<std::string *> paths = sample_paths(ims, n);
-    std::vector<Img<float>> result;
+    std::vector<ImgType> result;
     for (const auto &path: paths) {
         result.push_back(open_face(*path));
     }
@@ -91,10 +91,10 @@ sample_backgrounds(const paths &ims, size_t n, bool resize) {
     return result;
 }
 
-Img<float>
-random_crop(const Img<float> &img) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
+ImgType
+random_crop(const ImgType &img) {
+//    std::random_device rd;
+    std::mt19937 gen(SEED);
 
     int max_size = std::min(img.height, img.width);
     int size = std::uniform_int_distribution<>(FEATURE_SIZE, max_size)(gen);
@@ -104,7 +104,7 @@ random_crop(const Img<float> &img) {
     int left = max_width <= 1 ? 0 : std::uniform_int_distribution<>(0, max_width)(gen);
     int top = max_height <= 1 ? 0 : std::uniform_int_distribution<>(0, max_height)(gen);
 
-    Img<float> cropped(size, size);
+    ImgType cropped(size, size);
     for (int y = 0; y < size; ++y) {
         for (int x = 0; x < size; x++) {
             cropped.arr[y][x] = img.arr[y + top][x + left];
@@ -113,12 +113,12 @@ random_crop(const Img<float> &img) {
     return cropped;
 }
 
-Img<float>
+ImgType
 open_background(const std::string &path, bool resize) {
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
-    Img<float> im(image.rows, image.cols);
+    ImgType im(image.rows, image.cols);
     im.loadGrayScale(image);
-    Img<float> cropped = random_crop(im);
+    ImgType cropped = random_crop(im);
 
     if (resize) {
         return cropped.resize(FEATURE_SIZE, FEATURE_SIZE);

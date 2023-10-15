@@ -1,4 +1,4 @@
-#add_compile_options(-O3)
+add_compile_options(-O3)
 
 cmake_minimum_required(VERSION 3.26)
 project(object_detection_cpp)
@@ -12,7 +12,13 @@ add_executable(object_detection_cpp main.cpp
         image.cpp
         image.h
         utils.cpp
-        utils.h)
+        utils.h
+        learner.cpp
+        learner.h
+)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})

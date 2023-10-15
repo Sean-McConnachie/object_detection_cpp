@@ -10,7 +10,7 @@
 
 typedef std::vector<std::string> paths;
 
-typedef std::vector<Img<float>> images;
+typedef std::vector<ImgType> images;
 
 typedef struct {
     images ims;
@@ -25,10 +25,10 @@ typedef struct {
 paths
 list_dir(const std::string &path);
 
-Img<float>
+ImgType
 open_face(const std::string &path);
 
-Img<float>
+ImgType
 merge_images(const images &images);
 
 std::vector<std::string *>
@@ -40,14 +40,17 @@ sample_faces(const paths &ims, size_t n);
 images
 sample_backgrounds(const paths &ims, size_t n, bool resize = true);
 
-Img<float>
-random_crop(const Img<float> &img);
+ImgType
+random_crop(const ImgType &img);
 
-Img<float>
+ImgType
 open_background(const std::string &path, bool resize = true);
 
 Samples
 sample_data(int n_faces, int n_bgs, const paths &faces, const paths &bgs);
+
+Samples
+sample_data(int n_faces, int n_bgs, const paths &faces, const paths &bgs, Stats stats);
 
 Stats
 compute_stats(const images &ims);

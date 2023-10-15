@@ -41,6 +41,14 @@ Img<T>::Img(int height, int width) {
 }
 
 template<typename T>
+void
+Img<T>::swap(Img<T> &other) {
+    std::swap(height, other.height);
+    std::swap(width, other.width);
+    std::swap(arr, other.arr);
+}
+
+template<typename T>
 Img<T>::Img(const Img<T> &img) {
     this->height = img.height;
     this->width = img.width;
@@ -139,8 +147,8 @@ Img<T>::normalize(T mean, T std) {
 }
 
 template<typename T>
-[[maybe_unused]] Img<uchar> Img<T>::revertIntegral() {
-    Img<uchar> integral(this->height - 1, this->width - 1);
+[[maybe_unused]] Img<T> Img<T>::revertIntegral() {
+    Img<T> integral(this->height - 1, this->width - 1);
     for (size_t y = 0; y < this->height - 1; ++y) {
         for (size_t x = 0; x < this->width - 1; ++x) {
             integral.arr[y][x] = this->arr[y + 1][x + 1] - this->arr[y][x + 1] - this->arr[y + 1][x] + this->arr[y][x];
