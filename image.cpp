@@ -34,9 +34,10 @@ template<typename T>
 Img<T>::Img(int height, int width) {
     this->height = height;
     this->width = width;
-    this->arr = new T *[height];
-    for (size_t i = 0; i < height; i++) {
-        this->arr[i] = new T[width];
+    this->arr.reserve(height);
+    for (size_t i = 0; i < height; ++i) {
+        std::vector<T> row(width);
+        this->arr.push_back(row);
     }
 }
 
@@ -52,21 +53,24 @@ template<typename T>
 Img<T>::Img(const Img<T> &img) {
     this->height = img.height;
     this->width = img.width;
-    this->arr = new T *[height];
-    for (size_t i = 0; i < height; i++) {
-        this->arr[i] = new T[width];
-        for (size_t j = 0; j < width; j++) {
-            this->arr[i][j] = img.arr[i][j];
+    this->arr.reserve(height);
+    for (size_t i = 0; i < height; ++i) {
+        std::vector<T> row(width);
+        this->arr.push_back(row);
+    }
+    for (size_t y = 0; y < this->height; ++y) {
+        for (size_t x = 0; x < this->width; ++x) {
+            this->arr[y][x] = img.arr[y][x];
         }
     }
 }
 
 template<typename T>
 Img<T>::~Img() {
-    for (size_t i = 0; i < this->height; i++) {
-        delete[] this->arr[i];
+    for (auto &row: this->arr) {
+        row.clear();
     }
-    delete[] this->arr;
+    this->arr.clear();
 }
 
 template<typename T>
@@ -119,6 +123,32 @@ Img<T>::toMat() {
 
 template<typename T>
 void
+Img<T>::normalize() {
+    double mean = 0;
+    double std = 0;
+    size_t total = 0;
+    for (int y = 0; y < this->height; ++y) {
+        for (int x = 0; x < this->width; ++x) {
+            mean += this->arr[y][x];
+            total++;
+        }
+    }
+    mean /= (double) total;
+
+    for (int y = 0; y < this->height; ++y) {
+        for (int x = 0; x < this->width; ++x) {
+            std += std::pow(this->arr[y][x] - mean, 2);
+        }
+    }
+    std /= (double) total;
+    std = std::sqrt(std);
+
+    normalize(mean, std);
+}
+
+// TODO: This isn't correct
+template<typename T>
+void
 Img<T>::normalize(T max) {
     T max_val = 0;
     for (size_t y = 0; y < this->height; y++) {
@@ -168,4 +198,32 @@ Img<T> Img<T>::resize(int h, int w) {
         }
     }
     return resized;
+}
+
+template<typename T>
+Img<T> Img<T>::cropForIntegral(int x, int y, int w, int h) {
+    Img<T> cropped(h + 1, w + 1);
+    for (int row = 0; row < h + 1; ++row) {
+        for (int col = 0; col < w + 1; ++col) {
+            if (row + y >= this->height || col + x >= this->width) {
+                printf("ERR[OUT_OF_BOUNDS] Img::Crop (%d, %d)\n", row + y, col + x);
+                continue;
+            }
+            cropped.arr[row][col] = this->arr[row + y][col + x];
+        }
+    }
+    return cropped;
+}
+
+Scale
+scaled_size(Scale max, Scale size) {
+    Scale scaled;
+    if (size.width > size.height) {
+        scaled.width = max.width;
+        scaled.height = (int) ((ImgFlt) max.width * ((ImgFlt) size.height / (ImgFlt) size.width));
+    } else {
+        scaled.height = max.height;
+        scaled.width = (int) ((ImgFlt) max.height * ((ImgFlt) size.width / (ImgFlt) size.height));
+    }
+    return scaled;
 }

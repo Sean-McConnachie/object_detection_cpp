@@ -59,8 +59,8 @@ merge_images(const std::vector<ImgType> &images) {
 std::vector<std::string *>
 sample_paths(const paths &ims, size_t n) {
     std::vector<std::string *> result;
-//    std::random_device rd;
-    std::mt19937 gen(SEED);
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, (int) ims.size() - 1);
 
     for (size_t i = 0; i < n; ++i) {
@@ -93,8 +93,8 @@ sample_backgrounds(const paths &ims, size_t n, bool resize) {
 
 ImgType
 random_crop(const ImgType &img) {
-//    std::random_device rd;
-    std::mt19937 gen(SEED);
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
     int max_size = std::min(img.height, img.width);
     int size = std::uniform_int_distribution<>(FEATURE_SIZE, max_size)(gen);

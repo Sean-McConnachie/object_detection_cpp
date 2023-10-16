@@ -1,6 +1,8 @@
 #pragma once
 
 #include <omp.h>
+#include <utility>
+#include <fstream>
 
 #include "image.h"
 #include "feature.h"
@@ -14,14 +16,28 @@ typedef struct {
     flt threshold;
     int polarity;
     flt alpha;
-    const Feature *feat;
+    const std::shared_ptr<Feature> feat;
+
+    std::string csv() const;
 } WeakClassifier;
+
+WeakClassifier
+load_weak_classifier(const std::string &csv);
+
+void
+save_weak_classifiers(const std::string &path, const std::vector<WeakClassifier> &weakClassifiers);
+
+std::vector<WeakClassifier>
+load_weak_classifiers(const std::string &path);
+
+void
+print_weak_classifiers(const std::vector<WeakClassifier> &weakClassifiers);
 
 typedef struct {
     flt threshold;
     int polarity;
     flt classification_error;
-    Feature *feat;
+    std::shared_ptr<Feature> feat;
 } ClassifierResult;
 
 typedef struct {
@@ -44,11 +60,11 @@ private:
 
     void normalizeWeights();
 
-    ClassifierResult applyFeature(Feature *feature);
+    ClassifierResult applyFeature(std::shared_ptr<Feature> feature);
 
     RunningSums buildRunningSums();
 
-    static int weakClassifier(const ImgType &img, const Feature *feat, flt threshold, int polarity);
+    static int weakClassifier(const ImgType &img, const std::shared_ptr<Feature> &feat, flt threshold, int polarity);
 
     static int runWeakClassifier(const ImgType &img, const WeakClassifier &weakClassifier_);
 
@@ -62,7 +78,7 @@ public:
     std::vector<ImgType> integrals;
     std::vector<int> labels;
     fltvec weights;
-    std::vector<const Feature *> features;
+    std::vector<std::shared_ptr<Feature>> features;
 
     std::vector<WeakClassifier> weakClassifiers;
     std::vector<fltvec> weightHist;
@@ -70,6 +86,8 @@ public:
     Learner(std::vector<ImgType> ims, std::vector<int> lbls, const Features &feats, Stats stats);
 
     ~Learner() = default;
+
+    static int strongClassifier(const ImgType &img, const std::vector<WeakClassifier> &weakClassifiers);
 
     std::vector<WeakClassifier> train(int numWeakClassifiers);
 };

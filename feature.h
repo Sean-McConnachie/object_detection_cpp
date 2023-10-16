@@ -37,10 +37,11 @@ public:
 
     [[nodiscard]] std::string str() const;
 
+    [[nodiscard]] std::string csv() const;
 
     virtual std::tuple<int, const FeatPt *> points() const = 0;
 
-    [[nodiscard]] virtual const char * name() const = 0;
+    [[nodiscard]] virtual const char *name() const = 0;
 
     [[nodiscard]] ImgFlt diff(const ImgType &img) const;
 };
@@ -56,7 +57,7 @@ public:
 
     [[nodiscard]] static XY baseSize();
 
-    [[nodiscard]] const char * name() const override;
+    [[nodiscard]] const char *name() const override;
 };
 
 class Feature2v : public Feature {
@@ -70,7 +71,7 @@ public:
 
     [[nodiscard]] static XY baseSize();
 
-    [[nodiscard]] const char * name() const override;
+    [[nodiscard]] const char *name() const override;
 };
 
 class Feature3h : public Feature {
@@ -84,7 +85,7 @@ public:
 
     [[nodiscard]] static XY baseSize();
 
-    [[nodiscard]] const char * name() const override;
+    [[nodiscard]] const char *name() const override;
 
 };
 
@@ -99,7 +100,7 @@ public:
 
     [[nodiscard]] static XY baseSize();
 
-    [[nodiscard]] const char * name() const override;
+    [[nodiscard]] const char *name() const override;
 };
 
 class Feature4 : public Feature {
@@ -113,7 +114,7 @@ public:
 
     [[nodiscard]] static XY baseSize();
 
-    [[nodiscard]] const char * name() const override;
+    [[nodiscard]] const char *name() const override;
 };
 
 typedef struct {
@@ -128,4 +129,4 @@ Features generate_features();
 
 void print_features(const Features &features);
 
-std::vector<const Feature *> feature_vec(const Features &features);
+std::vector<std::shared_ptr<Feature>> feature_vec(const Features &features);

@@ -1,6 +1,83 @@
 #include "learner.h"
 
-#include <utility>
+
+std::string
+WeakClassifier::csv() const {
+    std::string out = std::to_string(this->threshold);
+    out += ",";
+    out += std::to_string(this->polarity);
+    out += ",";
+    out += std::to_string(this->alpha);
+    out += ",";
+    out += this->feat->csv();
+    return out;
+}
+
+WeakClassifier
+load_weak_classifier(const std::string &csv) {
+    std::vector<std::string> parts;
+    std::string part;
+    std::istringstream in(csv);
+    while (std::getline(in, part, ',')) {
+        parts.push_back(part);
+    }
+
+    flt threshold = std::stof(parts[0]);
+    int polarity = std::stoi(parts[1]);
+    flt alpha = std::stof(parts[2]);
+    std::string feat_name = parts[3];
+    size_t x = std::stoi(parts[4]);
+    size_t y = std::stoi(parts[5]);
+    size_t w = std::stoi(parts[6]);
+    size_t h = std::stoi(parts[7]);
+
+    std::shared_ptr<Feature> feat;
+    if (feat_name == "2h") {
+        feat = std::make_shared<Feature2h>(x, y, w, h);
+    } else if (feat_name == "2v") {
+        feat = std::make_shared<Feature2v>(x, y, w, h);
+    } else if (feat_name == "3h") {
+        feat = std::make_shared<Feature3h>(x, y, w, h);
+    } else if (feat_name == "3v") {
+        feat = std::make_shared<Feature3v>(x, y, w, h);
+    } else if (feat_name == "4r") {
+        feat = std::make_shared<Feature4>(x, y, w, h);
+    } else {
+        throw std::runtime_error("Unknown feature name: " + feat_name);
+    }
+
+    return {threshold, polarity, alpha, feat};
+}
+
+void
+save_weak_classifiers(const std::string &path, const std::vector<WeakClassifier> &weakClassifiers) {
+    std::ofstream out(path);
+    for (const auto &c: weakClassifiers) {
+        out << c.csv() << std::endl;
+    }
+    out.close();
+}
+
+std::vector<WeakClassifier>
+load_weak_classifiers(const std::string &path) {
+    std::vector<WeakClassifier> weakClassifiers;
+    std::ifstream in(path);
+    std::string line;
+    while (std::getline(in, line)) {
+        weakClassifiers.push_back(load_weak_classifier(line));
+    }
+    in.close();
+    return weakClassifiers;
+}
+
+void
+print_weak_classifiers(const std::vector<WeakClassifier> &weakClassifiers) {
+    int i = 0;
+    for (const auto &c: weakClassifiers) {
+        printf("%d Feature%s(%d, %d, %d, %d) threshold: %f polarity: %d alpha: %f\n", i++, c.feat->name(), c.feat->x,
+               c.feat->y, c.feat->width, c.feat->height, c.threshold, c.polarity, c.alpha);
+    }
+}
 
 Learner::Learner(std::vector<ImgType> ims, std::vector<int> lbls, const Features &feats, Stats stats) {
     integrals.reserve(ims.size());
@@ -47,7 +124,7 @@ Learner::normalizeWeights() {
 }
 
 int
-Learner::weakClassifier(const ImgType &img, const Feature *feat, flt threshold, int polarity) {
+Learner::weakClassifier(const ImgType &img, const std::shared_ptr<Feature> &feat, flt threshold, int polarity) {
     auto r = feat->diff(img);
     if ((flt) polarity * r < (flt) polarity * threshold) {
         return 1;
@@ -59,6 +136,23 @@ Learner::weakClassifier(const ImgType &img, const Feature *feat, flt threshold, 
 int
 Learner::runWeakClassifier(const ImgType &img, const WeakClassifier &weakClassifier_) {
     return weakClassifier(img, weakClassifier_.feat, weakClassifier_.threshold, weakClassifier_.polarity);
+}
+
+int
+Learner::strongClassifier(const ImgType &img, const std::vector<WeakClassifier> &weakClassifiers) {
+    flt sum_hypotheses, sum_alphas;
+    sum_hypotheses = sum_alphas = 0;
+
+    for (const auto &c: weakClassifiers) {
+        sum_hypotheses += c.alpha * (flt) runWeakClassifier(img, c);
+        sum_alphas += c.alpha;
+    }
+
+    if (sum_hypotheses >= 0.5 * sum_alphas) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 RunningSums
@@ -131,11 +225,11 @@ Learner::determineThresholdPolarity(const fltvec &results) {
 }
 
 ClassifierResult
-Learner::applyFeature(Feature *feature) {
+Learner::applyFeature(std::shared_ptr<Feature> feature) {
     fltvec results;
     std::fill_n(std::back_inserter(results), integrals.size(), 0);
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < integrals.size(); ++i) {
         results[i] = feature->diff(integrals[i]);
     }
@@ -157,7 +251,8 @@ Learner::applyFeature(Feature *feature) {
 
 std::vector<WeakClassifier>
 Learner::train(int numWeakClassifiers) {
-    auto temp = Feature2v(2, 3, 10, 4);
+    const size_t TOTAL_CLASSIFIERS = numWeakClassifiers * features.size();
+    size_t run_classifiers = 0;
 
     auto total_start = std::chrono::high_resolution_clock::now();
     for (int t = 0; t < numWeakClassifiers; t++) {
@@ -171,12 +266,12 @@ Learner::train(int numWeakClassifiers) {
 
         size_t i = 0;
         for (const auto &feat: features) {
-            auto f = const_cast<Feature *>(feat);
-//            auto f = &temp;
             --status;
+            ++run_classifiers;
+
             bool improved = false;
 
-            ClassifierResult result = applyFeature(f);
+            ClassifierResult result = applyFeature(feat);
             if (result.classification_error < best.classification_error) {
                 improved = true;
                 best = result;
@@ -185,18 +280,19 @@ Learner::train(int numWeakClassifiers) {
             if (improved || status == 0) {
                 auto end = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-                auto total_duration = std::chrono::duration_cast<std::chrono::seconds >(
+                auto total_duration = std::chrono::duration_cast<std::chrono::seconds>(
                         end - total_start).count();
+                auto features_perc = 100.0 * (flt) i / (flt) features.size();
+                printf("[%lds]\t(%d/%d)\t| Stage: [%ldms] %.2f%% (%zu/%zu)",
+                       total_duration, t + 1, numWeakClassifiers, duration, features_perc, i + 1, features.size());
+                if (improved)
+                    printf(" \tError improved to %f\t%s", best.classification_error, best.feat->str().c_str());
 
-                if (improved) {
-                    printf("t=%d/%d %lds (%ldms in this stage) %zu/%zu %.2f%% evaluated. Classification error improved to %f using %s ...\n",
-                           t + 1, numWeakClassifiers, total_duration, duration, i + 1, features.size(),
-                           100.0 * i / features.size(), best.classification_error, best.feat->str().c_str());
-                } else {
-                    printf("t=%d/%d %lds (%ldms in this stage) %zu/%zu %.2f%% evaluated.\n",
-                           t + 1, numWeakClassifiers, total_duration, duration, i + 1, features.size(),
-                           100.0 * i / features.size());
-                }
+                auto remaining_time =
+                        ((flt) total_duration / (flt) run_classifiers) * ((flt) (TOTAL_CLASSIFIERS - run_classifiers));
+                printf(" \tRemaining time: %lds", (long) remaining_time);
+
+                std::cout << std::endl;
 
                 status = STATUS_EVERY;
             }
@@ -205,7 +301,7 @@ Learner::train(int numWeakClassifiers) {
         auto beta = best.classification_error / (1.0 - best.classification_error);
         auto alpha = std::log(1.0 / beta);
 
-        WeakClassifier classifier{best.threshold, best.polarity, alpha, best.feat};
+        WeakClassifier classifier{best.threshold, best.polarity, (flt) alpha, best.feat};
 
         for (i = 0; i < integrals.size(); ++i) {
             auto im = &integrals[i];

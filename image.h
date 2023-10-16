@@ -7,13 +7,20 @@ void gamma(cv::Mat &img, double gamma);
 
 cv::Mat gleam(cv::Mat &img);
 
+typedef struct {
+    int width;
+    int height;
+} Scale;
+
+Scale scaled_size(Scale max, Scale size);
+
 template<typename T>
 class Img {
 private:
 public:
     int height{};
     int width{};
-    T **arr;
+    std::vector<std::vector<T>> arr;
 
     Img(int height, int width);
 
@@ -45,6 +52,8 @@ public:
      */
     cv::Mat toMat();
 
+    void normalize();
+
     void normalize(T max);
 
     void normalize(T mean, T std);
@@ -57,13 +66,20 @@ public:
     void print() { std::cout << *this << std::endl; }
 
     Img<T> resize(int h, int w);
+
+    /**
+     * @brief Return cropForIntegral of image. Does not copy.
+     *
+     */
+    Img<T> cropForIntegral(int x, int y, int w, int h);
+
 };
 
 template<typename U>
 std::ostream &operator<<(std::ostream &os, const Img<U> &img) {
     for (size_t y = 0; y < img.height; y++) {
         for (size_t x = 0; x < img.width; x++) {
-            os << (float) img.arr[y][x] << '\t';
+            os << (double) img.arr[y][x] << '\t';
         }
         os << std::endl;
     }
@@ -96,5 +112,8 @@ class Img<float>;
 template
 class Img<double>;
 
-typedef float ImgFlt;
+template
+class Img<long double>;
+
+typedef double ImgFlt;
 typedef Img<ImgFlt> ImgType;

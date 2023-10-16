@@ -46,7 +46,6 @@ Feature::print() const {
 
 std::string
 Feature::str() const {
-    // printf("Feature%s(x=%zu, y=%zu, w=%zu, h=%zu)\n", this->name(), this->x, this->y, this->width, this->height);
     std::string out = "Feature";
     out += this->name();
     out += "(x=";
@@ -61,13 +60,31 @@ Feature::str() const {
     return out;
 }
 
+std::string
+Feature::csv() const {
+    std::string out = this->name();
+    out += ",";
+    out += std::to_string(this->x);
+    out += ",";
+    out += std::to_string(this->y);
+    out += ",";
+    out += std::to_string(this->width);
+    out += ",";
+    out += std::to_string(this->height);
+    return out;
+}
+
 ImgFlt
 Feature::diff(const ImgType &img) const {
     ImgFlt result = 0;
     auto [n, pts] = this->points();
     for (int i = 0; i < n; ++i) {
         auto pt = pts[i];
-        result += pt.coef * img.arr[pt.y][pt.x];
+        if (pt.x >= img.width || pt.y >= img.height) {
+            std::cout << "ERR[OUT_OF_BOUNDS] diff: %s" << str() << std::endl;
+            continue;
+        }
+        result += (ImgFlt) pt.coef * img.arr[pt.y][pt.x];
     }
     return result;
 }
@@ -206,7 +223,7 @@ Feature4::baseSize() {
 
 const char *
 Feature4::name() const {
-    return "4";
+    return "4r";
 }
 
 Feature4::Feature4(size_t x, size_t y, size_t width, size_t height) : Feature(x, y, width, height) {
@@ -294,23 +311,13 @@ print_features(const Features &features) {
     printf("Features use %.2f MB\n", mb);
 }
 
-std::vector<const Feature *>
+std::vector<std::shared_ptr<Feature>>
 feature_vec(const Features &features) {
-    std::vector<const Feature *> feats;
-    for (const auto &f: features.f2h) {
-        feats.push_back((Feature *) &f);
-    }
-    for (const auto &f: features.f2v) {
-        feats.push_back((Feature *) &f);
-    }
-    for (const auto &f: features.f3h) {
-        feats.push_back((Feature *) &f);
-    }
-    for (const auto &f: features.f3v) {
-        feats.push_back((Feature *) &f);
-    }
-    for (const auto &f: features.f4) {
-        feats.push_back((Feature *) &f);
-    }
+    std::vector<std::shared_ptr<Feature>> feats;
+    for (auto &f: features.f2h) feats.push_back(std::make_unique<Feature2h>(f));
+    for (auto &f: features.f2v) feats.push_back(std::make_unique<Feature2v>(f));
+    for (auto &f: features.f3h) feats.push_back(std::make_unique<Feature3h>(f));
+    for (auto &f: features.f3v) feats.push_back(std::make_unique<Feature3v>(f));
+    for (auto &f: features.f4) feats.push_back(std::make_unique<Feature4>(f));
     return feats;
 }
