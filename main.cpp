@@ -220,10 +220,6 @@ int main() {
         print_weak_classifiers(classifiers.back());
     }
 
-//    for (int i = 0; i < 10; ++i) {
-//        classifiers[0].pop_back();
-//    }
-
     test_classifier(classifiers, "../dataset/legend0.jpg");
 
 //    const int NUM_CASCADE_LAYERS = 25;

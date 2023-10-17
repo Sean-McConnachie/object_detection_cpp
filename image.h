@@ -24,12 +24,6 @@ public:
 
     Img(int height, int width);
 
-    /**
-     * @brief Copy constructor
-     * @param img
-     */
-    Img(const Img<T> &img);
-
     ~Img();
 
     void swap(Img<T> &other);
@@ -53,8 +47,6 @@ public:
     cv::Mat toMat();
 
     void normalize();
-
-    void normalize(T max);
 
     void normalize(T mean, T std);
 

@@ -50,22 +50,6 @@ Img<T>::swap(Img<T> &other) {
 }
 
 template<typename T>
-Img<T>::Img(const Img<T> &img) {
-    this->height = img.height;
-    this->width = img.width;
-    this->arr.reserve(height);
-    for (size_t i = 0; i < height; ++i) {
-        std::vector<T> row(width);
-        this->arr.push_back(row);
-    }
-    for (size_t y = 0; y < this->height; ++y) {
-        for (size_t x = 0; x < this->width; ++x) {
-            this->arr[y][x] = img.arr[y][x];
-        }
-    }
-}
-
-template<typename T>
 Img<T>::~Img() {
     for (auto &row: this->arr) {
         row.clear();
@@ -144,26 +128,6 @@ Img<T>::normalize() {
     std = std::sqrt(std);
 
     normalize(mean, std);
-}
-
-// TODO: This isn't correct
-template<typename T>
-void
-Img<T>::normalize(T max) {
-    T max_val = 0;
-    for (size_t y = 0; y < this->height; y++) {
-        for (size_t x = 0; x < this->width; x++) {
-            if (this->arr[y][x] > max_val) {
-                max_val = this->arr[y][x];
-            }
-        }
-    }
-
-    for (size_t y = 0; y < this->height; y++) {
-        for (size_t x = 0; x < this->width; x++) {
-            this->arr[y][x] = (this->arr[y][x] * max) / max_val;
-        }
-    }
 }
 
 template<typename T>
