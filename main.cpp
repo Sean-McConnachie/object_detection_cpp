@@ -9,13 +9,11 @@
 #include "cascade.h"
 #include "runtime.h"
 
-int train_manual() {
+int train_manual(int numClassifiers) {
     const int FACE_COUNT = 1000;
     const int BG_COUNT = 1000;
-    const int NUM_CLASSIFIERS = 25;
 
-    const char *CLASSIFIER_DIR = "../classifiers/test";
-    const char *SUB_DIR = "test";
+    const char *CLASSIFIER_DIR = "../classifiers/paper_impl";
 
     if (mkdir(CLASSIFIER_DIR, 0777) == -1) {
     } else {
@@ -40,11 +38,11 @@ int train_manual() {
     }
 
     Learner learner(integrals, samples.labels, mkshd(fvec));
-    learner.train(NUM_CLASSIFIERS);
+    learner.train(numClassifiers);
 
     // save to file
     char path[300];
-    sprintf(path, "%s/%d.csv", CLASSIFIER_DIR, NUM_CLASSIFIERS);
+    sprintf(path, "%s/%d.csv", CLASSIFIER_DIR, numClassifiers);
     save_weak_classifiers(path, *learner.weakClassifiers);
 
     return 0;
@@ -95,7 +93,7 @@ int train_cascade() {
 }
 
 int test_image() {
-    const char *CLASSIFIER_DIR = "../classifiers/500fcs_500bgs_15px_0.100000FP_0.990000D_0.005000TFP";
+    const char *CLASSIFIER_DIR = "../classifiers/paper_impl";
     const char *IMAGE_PATH = "../dataset/solvay-conference.jpg";
 
     vec<classifiervec> cascade;
@@ -143,9 +141,16 @@ enum Mode {
 };
 
 int main() {
-    switch (TrainCascade) {
+//    intvec intervals = {26, 50,51, 52, 100};
+//    for (int interval: intervals) {
+//        printf("interval: %d\n", interval);
+//        train_manual(interval);
+//    }
+//
+//    return 0;
+    switch (TestImage) {
         case TrainManual:
-            return train_manual();
+            return train_manual(0);
         case TrainCascade:
             return train_cascade();
         case TestImage:

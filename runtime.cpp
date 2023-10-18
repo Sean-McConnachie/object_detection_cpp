@@ -48,7 +48,7 @@ Runtime::Runtime(vec<classifiervec> cascade) {
         max_y = FEATURE_SIZE * scale;
         max_x = FEATURE_SIZE * scale;
         scale += SCALE_FACTOR;
-        break;
+//        break;
     }
 }
 
