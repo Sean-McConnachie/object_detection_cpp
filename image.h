@@ -50,6 +50,8 @@ public:
 
     void normalize(T mean, T std);
 
+    void rangeTo(T max);
+
     [[maybe_unused]] Img<T> revertIntegral();
 
     template<typename U>

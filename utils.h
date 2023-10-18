@@ -31,7 +31,7 @@ open_face(const std::string &path);
 ImgType
 merge_images(const images &images);
 
-std::vector<std::string *>
+std::vector<std::unique_ptr<std::string>>
 sample_paths(const paths &ims, size_t n);
 
 images

@@ -56,16 +56,16 @@ merge_images(const std::vector<ImgType> &images) {
     return merged;
 }
 
-std::vector<std::string *>
+std::vector<std::unique_ptr<std::string>>
 sample_paths(const paths &ims, size_t n) {
-    std::vector<std::string *> result;
+    std::vector<std::unique_ptr<std::string>> result;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, (int) ims.size() - 1);
 
     for (size_t i = 0; i < n; ++i) {
         int index = distrib(gen);
-        result.push_back(new std::string(ims[index]));
+        result.push_back(std::make_unique<std::string>(ims[index]));
     }
 
     return result;
@@ -73,7 +73,7 @@ sample_paths(const paths &ims, size_t n) {
 
 images
 sample_faces(const paths &ims, size_t n) {
-    std::vector<std::string *> paths = sample_paths(ims, n);
+    auto paths = sample_paths(ims, n);
     std::vector<ImgType> result;
     for (const auto &path: paths) {
         result.push_back(open_face(*path));
@@ -83,7 +83,7 @@ sample_faces(const paths &ims, size_t n) {
 
 images
 sample_backgrounds(const paths &ims, size_t n, bool resize) {
-    std::vector<std::string *> paths = sample_paths(ims, n);
+    auto paths = sample_paths(ims, n);
     images result;
     for (const auto &path: paths) {
         result.push_back(open_background(*path, resize));
@@ -133,13 +133,13 @@ sample_data(int n_faces, int n_bgs, const paths &faces, const paths &bgs) {
     Samples samples;
 
     for (auto &face: sample_faces(faces, n_faces)) {
-        face.normalize(1.0);
+        face.rangeTo(255.0);
         samples.ims.push_back(face);
         samples.labels.push_back(1);
     }
 
     for (auto &bg: sample_backgrounds(bgs, n_bgs)) {
-        bg.normalize(1.0);
+        bg.rangeTo(255.0);
         samples.ims.push_back(bg);
         samples.labels.push_back(0);
     }

@@ -11,15 +11,18 @@
 typedef ImgFlt flt;
 
 typedef std::vector<flt> fltvec;
+typedef std::vector<int> intvec;
 
 typedef struct {
     flt threshold;
     int polarity;
     flt alpha;
-    const std::shared_ptr<Feature> feat;
+    const shdptr<Feature> feat;
 
-    std::string csv() const;
+    [[nodiscard]] std::string csv() const;
 } WeakClassifier;
+
+typedef std::vector<WeakClassifier> classifiervec;
 
 WeakClassifier
 load_weak_classifier(const std::string &csv);
@@ -37,7 +40,7 @@ typedef struct {
     flt threshold;
     int polarity;
     flt classification_error;
-    std::shared_ptr<Feature> feat;
+    shdptr<Feature> feat;
 } ClassifierResult;
 
 typedef struct {
@@ -52,6 +55,20 @@ typedef struct {
     fltvec s_pluses;
 } RunningSums;
 
+typedef struct {
+    flt alphaSum;
+    flt weightedSum;
+    flt confidenceInterval;
+
+    [[nodiscard]]int label() const {
+        if (weightedSum >= 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+} StrongClassifierResult;
+
 class Learner {
 private:
 
@@ -60,11 +77,11 @@ private:
 
     void normalizeWeights();
 
-    ClassifierResult applyFeature(std::shared_ptr<Feature> feature);
+    ClassifierResult applyFeature(shdptr<Feature> feature);
 
     RunningSums buildRunningSums();
 
-    static int weakClassifier(const ImgType &img, const std::shared_ptr<Feature> &feat, flt threshold, int polarity);
+    static int weakClassifier(const ImgType &img, shdptr<Feature> feat, flt threshold, int polarity);
 
     static int runWeakClassifier(const ImgType &img, const WeakClassifier &weakClassifier_);
 
@@ -74,20 +91,23 @@ private:
     ThresholdPolarity determineThresholdPolarity(const fltvec &results);
 
 public:
-
-    std::vector<ImgType> integrals;
+    std::vector<shdptr<ImgType>> integrals;
     std::vector<int> labels;
     fltvec weights;
-    std::vector<std::shared_ptr<Feature>> features;
+    shdptr<std::vector<shdptr<Feature>>> features;
 
-    std::vector<WeakClassifier> weakClassifiers;
+    shdptr<classifiervec> weakClassifiers;
     std::vector<fltvec> weightHist;
 
-    Learner(std::vector<ImgType> ims, std::vector<int> lbls, const Features &feats, Stats stats);
+    Learner(std::vector<shdptr<ImgType>> normalizedIntegrals,
+            std::vector<int> lbls,
+            shdptr<std::vector<shdptr<Feature>>> feats);
 
     ~Learner() = default;
 
-    static int strongClassifier(const ImgType &img, const std::vector<WeakClassifier> &weakClassifiers);
+    void reInit(std::vector<shdptr<ImgType>> integrals, intvec lbls);
 
-    std::vector<WeakClassifier> train(int numWeakClassifiers);
+    static StrongClassifierResult strongClassifier(const ImgType &img, const classifiervec &weakClassifiers);
+
+    shdptr<classifiervec> train(int numWeakClassifiers);
 };

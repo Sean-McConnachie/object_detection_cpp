@@ -311,13 +311,13 @@ print_features(const Features &features) {
     printf("Features use %.2f MB\n", mb);
 }
 
-std::vector<std::shared_ptr<Feature>>
+std::vector<shdptr<Feature>>
 feature_vec(const Features &features) {
-    std::vector<std::shared_ptr<Feature>> feats;
-    for (auto &f: features.f2h) feats.push_back(std::make_unique<Feature2h>(f));
-    for (auto &f: features.f2v) feats.push_back(std::make_unique<Feature2v>(f));
-    for (auto &f: features.f3h) feats.push_back(std::make_unique<Feature3h>(f));
-    for (auto &f: features.f3v) feats.push_back(std::make_unique<Feature3v>(f));
-    for (auto &f: features.f4) feats.push_back(std::make_unique<Feature4>(f));
+    std::vector<shdptr<Feature>> feats;
+    for (auto &f: features.f2h) feats.push_back(mkshd<Feature2h>(f));
+    for (auto &f: features.f2v) feats.push_back(mkshd<Feature2v>(f));
+    for (auto &f: features.f3h) feats.push_back(mkshd<Feature3h>(f));
+    for (auto &f: features.f3v) feats.push_back(mkshd<Feature3v>(f));
+    for (auto &f: features.f4) feats.push_back(mkshd<Feature4>(f));
     return feats;
 }

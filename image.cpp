@@ -51,10 +51,10 @@ Img<T>::swap(Img<T> &other) {
 
 template<typename T>
 Img<T>::~Img() {
-    for (auto &row: this->arr) {
-        row.clear();
-    }
-    this->arr.clear();
+//    for (auto &row: this->arr) {
+//        row.clear();
+//    }
+//    this->arr.clear();
 }
 
 template<typename T>
@@ -136,6 +136,16 @@ Img<T>::normalize(T mean, T std) {
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
             this->arr[y][x] = (this->arr[y][x] - mean) / std;
+        }
+    }
+}
+
+template<typename T>
+void
+Img<T>::rangeTo(T max) {
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            this->arr[y][x] = this->arr[y][x] / max;
         }
     }
 }

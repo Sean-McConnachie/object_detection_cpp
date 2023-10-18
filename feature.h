@@ -33,6 +33,8 @@ public:
 
     Feature(size_t x, size_t y, size_t width, size_t height);
 
+    Feature(const Feature &other) = default;
+
     void print() const;
 
     [[nodiscard]] std::string str() const;
@@ -129,4 +131,4 @@ Features generate_features();
 
 void print_features(const Features &features);
 
-std::vector<std::shared_ptr<Feature>> feature_vec(const Features &features);
+std::vector<shdptr<Feature>> feature_vec(const Features &features);

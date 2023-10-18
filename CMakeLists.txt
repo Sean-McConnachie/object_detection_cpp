@@ -15,6 +15,10 @@ add_executable(object_detection_cpp main.cpp
         utils.h
         learner.cpp
         learner.h
+        cascade.cpp
+        cascade.h
+        runtime.cpp
+        runtime.h
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
